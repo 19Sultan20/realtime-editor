@@ -1,17 +1,21 @@
 const express = require('express');
-const app = express();
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/Actions');
 
+const app = express();
 const server = http.createServer(app);
 
+app.use(express.static('build'));
+
+// ✅ Socket.IO with CORS
 const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:3000',
       'http://localhost:5000',
-      'https://your-frontend.vercel.app' // change to your Vercel frontend URL
+      process.env.FRONTEND_URL || 'https://your-frontend.up.railway.app', // 👈 set FRONTEND_URL in Railway
     ],
     methods: ['GET', 'POST'],
   },
@@ -28,12 +32,13 @@ function getAllConnectedClients(roomId) {
 }
 
 io.on('connection', (socket) => {
-  console.log('socket connected', socket.id);
+  console.log('✅ Socket connected:', socket.id);
 
   socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
     socket.join(roomId);
     const clients = getAllConnectedClients(roomId);
+
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit(ACTIONS.JOINED, {
         clients,
@@ -63,5 +68,19 @@ io.on('connection', (socket) => {
   });
 });
 
+// ✅ Serve React build (root /build folder, not client/build)
+const buildPath = path.join(__dirname, 'build');
+app.use(express.static(buildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(buildPath, 'index.html'));
+});
+
+// ✅ Use Railway/Render port
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log('🚀 Server running on port ${PORT}');
+  if (process.env.FRONTEND_URL) {
+    console.log('🌍 CORS allowed for: ${process.env.FRONTEND_URL}');
+  }
+});
