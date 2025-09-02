@@ -1,16 +1,18 @@
-// socket.js
 import { io } from 'socket.io-client';
+
+// The URL for your backend server will be different in production.
+// We use a React environment variable to handle this.
+const BACKEND_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://realtime-editor-yg7w.onrender.com' // <-- REPLACE with your Render backend URL
+  : 'http://localhost:5000';
 
 export const initSocket = async () => {
   const options = {
-    forceNew: true,                  // always create a new connection
-    reconnectionAttempts: Infinity,  // retry forever if disconnected
-    timeout: 10000,                  // 10s timeout
-    transports: ['websocket'],       // prefer websocket for stability
+    forceNew: true,
+    reconnectionAttempts: Infinity,
+    timeout: 10000,
+    transports: ['websocket'],
   };
 
-  // ✅ Local backend URL only
-  const socketUrl = 'http://localhost:5000';
-
-  return io(socketUrl, options);
+  return io(BACKEND_URL, options);
 };
