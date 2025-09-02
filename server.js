@@ -7,15 +7,13 @@ const ACTIONS = require('./src/Actions');
 const app = express();
 const server = http.createServer(app);
 
-app.use(express.static('build'));
-
 // ✅ Socket.IO with CORS
 const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:3000',
       'http://localhost:5000',
-      process.env.FRONTEND_URL || 'https://your-frontend.up.railway.app', // 👈 set FRONTEND_URL in Railway
+      process.env.FRONTEND_URL || 'https://your-frontend.up.railway.app',
     ],
     methods: ['GET', 'POST'],
   },
@@ -68,7 +66,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// ✅ Serve React build (root /build folder, not client/build)
+// ✅ Serve React build
 const buildPath = path.join(__dirname, 'build');
 app.use(express.static(buildPath));
 
@@ -79,8 +77,8 @@ app.get('*', (req, res) => {
 // ✅ Use Railway/Render port
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log('🚀 Server running on port ${PORT}');
+  console.log(`🚀 Server running on port ${PORT}`);
   if (process.env.FRONTEND_URL) {
-    console.log('🌍 CORS allowed for: ${process.env.FRONTEND_URL}');
+    console.log(`🌍 CORS allowed for: ${process.env.FRONTEND_URL}`);
   }
 });
