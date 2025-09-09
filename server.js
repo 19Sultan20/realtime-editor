@@ -10,14 +10,13 @@ const server = http.createServer(app);
 // ✅ Socket.IO with CORS
 const io = new Server(server, {
   cors: {
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:5000',
-      process.env.FRONTEND_URL || 'https://your-frontend.up.railway.app',
-    ],
-    methods: ['GET', 'POST'],
+    origin: process.env.NODE_ENV === 'production'
+      ? "*" // same-origin, safe since build is served from this server
+      : ["http://localhost:3000", "http://localhost:5000"],
+    methods: ["GET", "POST"],
   },
 });
+
 
 const userSocketMap = {};
 function getAllConnectedClients(roomId) {
